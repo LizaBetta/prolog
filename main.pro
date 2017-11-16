@@ -11,12 +11,8 @@ delete_first2(E, [], []).
 delete_first2(E, [E | L1], L1).
 delete_first2(E, [A | L1], [A | L2]) :- not(A=E), delete_first2(E, L1, L2).
 
-delete_all2(E, [], []).
-
-% delete_all2(E, [], []).
-% delete_all2(E, [E | A], [E | B]) :- !, fail.
-% delete_all2(E, [A | B], [A | D]) :- !, delete_all2(E, B, D).
-% delete_all2(E, [E | A], B) :- delete_all2(E, A, B).
+delete_all2(E, A, A) :- not(member(E, A)).
+delete_all2(E, A, B) :- member(E, A), delete_first2(E, A, X), delete_all2(E, X, B).
 
 delete_one2(E, A, A) :- not(member(E, A)).
 delete_one2(E, A, A) :- member(E, A), !, fail.
