@@ -15,10 +15,26 @@ delete_all2(E, A, A) :- not(member(E, A)).
 delete_all2(E, A, B) :- member(E, A), delete_first2(E, A, X), delete_all2(E, X, B).
 
 delete_one2(E, A, A) :- not(member(E, A)).
-delete_one2(E, A, A) :- member(E, A), !, fail.
-delete_one2(E, [E | L1], L1).
-delete_one2(E, [E | L1], [E | L2]) :- member(E, L1), delete_one2(E, L1, L2), !.
-delete_one2(E, [A | L1], [B | L2]) :- A=B, delete_one2(E, L1, L2).
+delete_one2(E, [E | L], L).
+delete_one2(E, [S | A], [S | B]) :- member(E, A), delete_one2(E, A, B).
 
 no_doubles2([], []).
-no_doubles2([A | L1], [A | L2]) :- !, not(member(A, L2)), delete_all2(A, L1, X), no_doubles2(X, L2).
+no_doubles2([A | L1], [A | L2]) :- delete_all2(A, L1, X), n_member(A, L2), no_doubles2(X, L2).
+
+n_member(E, []).
+n_member(E, [A | L]) :- not(E == A), n_member(E, L).
+
+sublist2([], L).
+sublist2([A | B], [A | C]) :- sublist2(B, C).
+sublist2(A, [B | C]) :- sublist2(A, C).
+
+number2(E, 0, [E | L]).
+number2(E, X, [A | B]) :- Y is X-1, Y >= 0, number2(E, Y, B).
+
+
+sort2([], []).
+
+%--------------------------------------
+
+subset2([], A).
+subset2([A | B], C) :- member2(A, C), subset2(B, C).
