@@ -1,37 +1,63 @@
 %1
+% (i, i, i)
+% (o, i, i)
+% (i, o, i)
+% (i, i, o)
 
 my_append([], X, X).
 my_append([A | B], C, [A | D]) :- my_append(B, C, D).
 
 %2
-
-step_reverse(X, X, []).
-step_reverse(A, B, [C | D]) :- append([C], A, X), step_reverse(X, B, D).
+% (i, i)
+% (o, i)
+% (i, o)
 
 my_reverse([], []).
 my_reverse(A, B) :- step_reverse([], A, B).
 
+step_reverse(X, X, []).
+step_reverse(A, B, [C | D]) :- append([C], A, X), step_reverse(X, B, D).
+
 %3
+% (i, i, i)
+% (o, i, i)
+% (i, o, i)
+% (i, i, o)
+
 my_delete_first(E, [], []).
 my_delete_first(E, [E | L1], L1).
-my_delete_first(E, [A | L1], [A | my_L]) :- not(A=E), my_delete_first(E, L1, my_L).
+my_delete_first(E, [A | L1], [A | L2]) :- not(A=E), my_delete_first(E, L1, L2).
 
 %4
+% (i, i, i)
+% (o, i, i)
+% (i, o, i) undeterm
+% (i, i, o)
 my_delete_all(E, A, A) :- n_member(E, A).
 my_delete_all(E, A, B) :- member(E, A), my_delete_first(E, A, X), my_delete_all(E, X, B).
 
 %5
+% (i, i, i)
+% (o, i, i)
+% (i, o, i) undeterm
+% (i, i, o)
 my_delete_one(E, [E | L], L).
 my_delete_one(E, [S | A], [S | B]) :- my_delete_one(E, A, B).
 
 %6
+% (i, i)
+% (o, i) undeterm
+% (i, o)
 my_no_doubles([], []).
-my_no_doubles([A | L1], [A | my_L]) :- my_delete_all(A, L1, X), n_member(A, my_L), my_no_doubles(X, my_L).
+my_no_doubles([A | L1], [A | L2]) :- my_delete_all(A, L1, X), n_member(A, L2), my_no_doubles(X, L2).
 
 n_member(E, []).
 n_member(E, [A | L]) :- not(E == A), n_member(E, L).
 
 %7
+% (i, i)
+% (o, i) undeterm
+% (i, o) undeterm
 my_sublist([], L).
 my_sublist([A | B], [A | C]) :- my_sublist(B, C).
 my_sublist(A, [B | C]) :- my_sublist(A, C).
