@@ -82,11 +82,10 @@ my_subset([], A).
 my_subset([A | B], C) :- member(A, C), my_subset(B, C).
 
 %11
-my_union([], A, B) :- seteq(A, B).
-my_union([E | L], A, B) :- member(E, B), my_delete_all(E, B, X), print(E), print(B), print(L), print(A), print(X), print(' '), my_union(L, A, X).
+my_union([], A, B) :- !, seteq(A, B).
+my_union([E | L], A, B) :- member(E, B), is_set(B), my_delete_all(E, B, X), my_delete_all(E, A, Y), my_delete_all(E, L, Z), my_union(Z, Y, X), !.
 
-seteq([], []).
-seteq([A | B], L) :- member(A, L), my_delete_all(A, L, X), seteq(B, X).
+seteq(A, B) :- is_set(A), permutation(A, B).
 
 %--------------------------------------
 
@@ -161,3 +160,10 @@ step_min_path(X, Y, L, M) :- member(M, L), maplist([A,B]>>(path_weight(A,B)), L,
 
 % 19
 
+cyclic :- neighbours(A, B), all_paths(A, B, L), length(L, X), X > 1, !.
+
+%20
+
+is_connected :- not(is_disconnected).
+
+is_disconnected :- neighbours(A, _), neighbours(B, _), not(A = B), all_paths(A, B, L), length(L, 0).
