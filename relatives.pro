@@ -42,6 +42,10 @@ maried(judy, ralph).
 maried(jane, keith).
 maried(nora, bruce).
 
+happy_maried(A, B) :-
+	maried(A, B);
+	maried(B, A).
+
 parent(mary,  irma).
 parent(james, irma).
 parent(mary,  ruth).
@@ -116,10 +120,55 @@ uncle_aunt_like(UNCLE_AUNT, CHILD) :-
 	has_same_parents(PARENT, UNCLE_AUNT).
 
 uncle(UNCLE, CHILD) :-
-	uncle_aunt_like(UNCLE, CHILD),
-	male(UNCLE).
+	male(UNCLE),
+	uncle_aunt_like(UNCLE, CHILD).
 
 aunt(AUNT, CHILD) :-
 	female(AUNT),
-	uncle_aunt_like(AUNT, CHILD),
-	index(CHILD, Y), index(AUNT, X), print([Y, X, CHILD]).
+	uncle_aunt_like(AUNT, CHILD).
+
+double(DVOYURODNIE, CHILD) :-
+	uncle_aunt_like(PARENT2, CHILD)
+	parent(PARENT2, DVOYURODNIE).
+
+double_brother(NEPHEW, CHILD) :-
+	double(NEPHEW, CHILD),
+	male(NEPHEW).
+
+double_sister(COUSIN, CHILD) :-
+	double(COUSIN, CHILD),
+	male(COUSIN).
+
+grandparent(GRAND, CHILD) :-
+	parent(PARENT, CHILD),
+	parent(GRAND, PARENT).
+
+grandfather(GRAND, CHILD) :-
+	grandparent(GRAND, CHILD),
+	male(GRAND).
+
+grandmother(GRAND, CHILD) :-
+	grandparent(GRAND, CHILD),
+	female(GRAND).
+
+grandson(GRANDSON, GRANDPARENT) :-
+	grandparent(GRANDPARENT, GRANDSON),
+	male(GRANDSON).
+
+grandaughter(GRANDAUGHTER, GRANDPARENT) :-
+	grandparent(GRANDPARENT, GRANDAUGHTER),
+	female(GRANDAUGHTER).
+
+partners_parent(PARENT, HUMAN) :-
+	happy_maried(HUMAN, PARTNER),
+	parent(PARENT, PARTNER).
+
+tesha(TESHA, HUMAN) :-
+	partners_parent(TESHA, HUMAN),
+	female(TESHA).
+
+test(TEST, HUMAN) :-
+	partners_parent(TEST, HUMAN),
+	male(TEST).
+
+

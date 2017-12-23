@@ -52,7 +52,7 @@ my_no_doubles([], []).
 my_no_doubles([A | L1], [A | L2]) :- my_delete_all(A, L1, X), n_member(A, L2), my_no_doubles(X, L2).
 
 n_member(E, []).
-n_member(E, [A | L]) :- not(E == A), n_member(E, L).
+n_member(E, [A | L]) :- not(E = A), n_member(E, L).
 
 %7
 % (i, i)
@@ -63,11 +63,17 @@ my_sublist([A | B], [A | C]) :- my_sublist(B, C).
 my_sublist(A, [B | C]) :- my_sublist(A, C).
 
 %8
+% (i, i, i)
+% (o, i, i)
+% (i, o, i) undeterm
 my_number(E, 0, [E | L]).
-my_number(E, X, [A | B]) :- Y is X-1, Y >= 0, my_number(E, Y, B).
+my_number(E, X, [A | B]) :- my_number(E, Y, B), X is Y+1.
 
 
 %9
+% (i, i)
+% (o, i) undeterm
+% (i, o)
 my_sort(A, B) :- permutation(A, B), my_sorted(B).
 
 my_sorted([]).
@@ -78,10 +84,14 @@ greatet_then_some(A, B) :- member(M, B), A > M.
 %--------------------------------------
 
 %10
-my_subset([], A).
-my_subset([A | B], C) :- member(A, C), my_subset(B, C).
+% (i, i)
+% (o, i) undeterm
+my_subset([], A) :- is_set(A).
+my_subset(A, A) :- is_set(A).
+my_subset([A | B], C) :- member(A, C), n_member(A, B), is_set(B), my_subset(B, C).
 
 %11
+% TODO make good
 my_union([], A, B) :- !, seteq(A, B).
 my_union([E | L], A, B) :- member(E, B), is_set(B), my_delete_all(E, B, X), my_delete_all(E, A, Y), my_delete_all(E, L, Z), my_union(Z, Y, X), !.
 
@@ -93,30 +103,39 @@ max(A, B, B) :- A < B.
 max(A, B, A) :- A >= B.
 
 %12
+% (i, i)
+% (i, o)
 my_tree_depth(empty, 0).
 my_tree_depth(tree(L, R, N), X) :- my_tree_depth(L, A), my_tree_depth(R, B), max(A, B, S), X is S+1.
 
 my_tree_eq(empty, empty).
-my_tree_eq(tree(L1, R1, N), tree(my_L, my_R, N)) :- my_tree_eq(L1, my_L), my_tree_eq(R1, my_R).
+my_tree_eq(tree(L1, R1, N), tree(L2, R2, N)) :- my_tree_eq(L1, L2), my_tree_eq(R1, R2).
 
 %13
-my_sub_tree(A, A).
-my_sub_tree(tree(L, R, N), X) :- my_tree_eq(L, X) ; my_tree_eq(R, X) ; my_sub_tree(L, X) ; my_sub_tree(R, X).
+% (i, i)
+% (i, o)
+% (o, i)
+my_subtree(A, A).
+my_subtree(tree(L, R, N), X) :- my_tree_eq(L, X) ; my_tree_eq(R, X) ; my_subtree(L, X) ; my_subtree(R, X).
 
 %14
+% (i, i)
+% (i, o)
 
 my_flatten_tree(empty, []).
-my_flatten_tree(tree(L, R, N), S) :- member(N, S), my_delete_first(N, S, X), my_flatten_tree(L, A), my_flatten_tree(R, B), my_append(A, B, X).
+my_flatten_tree(tree(L, R, N), S) :- member(N, S), my_delete_first(N, S, X), my_flatten_tree(L, A), my_flatten_tree(R, B), !, my_append(A, B, X).
 
 %15
+% (i, i, i, i)
+% (i, i, i, o)
+% (i, i, o, i)
+% (i, o, i, i)
 
 my_substitute(empty, A, B, empty).
-my_substitute(tree(L1, R1, A), A, B, tree(my_L, my_R, Y)) :- !, Y is B, my_substitute(L1, A, B, my_L), my_substitute(R1, A, B, my_R).
-my_substitute(tree(L1, R1, X), A, B, tree(my_L, my_R, X)) :- my_substitute(L1, A, B, my_L), my_substitute(R1, A, B, my_R).
+my_substitute(tree(L1, R1, A), A, B, tree(L2, R2, Y)) :- !, Y = B, my_substitute(L1, A, B, L2), my_substitute(R1, A, B, R2).
+my_substitute(tree(L1, R1, X), A, B, tree(L2, R2, X)) :- my_substitute(L1, A, B, L2), my_substitute(R1, A, B, R2).
 
 %--------------------------------------
-% 16
-
 edge(a, c, 8).
 edge(a, b, 3).
 edge(c, d, 12).
@@ -132,6 +151,12 @@ neighbours2(A, B, X) :- edge(B, A, X).
 is_set([]).
 is_set([A | B]) :- n_member(A, B), is_set(B).
 
+% 16
+% (i, i, i)
+% (i, i, o)
+% (i, o, i)
+% (o, i, i)
+
 path(X, Y, L) :- step_path(X, Y, [], L), n_member(X, L).
 
 step_path(X, X, _, []).
@@ -143,12 +168,16 @@ step_all_paths(X, Y, AP, LP) :- path(X, Y, P), n_member(P, AP), !, append([P], A
 step_all_paths(X, Y, LP, LP).
 
 % 17
+% (i, i, i)
+% (i, i, o) undeterm
 short_path(X, Y, M) :- step_short_path(X, Y, [], M).
 
 step_short_path(X, Y, L, M) :- path(X, Y, P), n_member(P, L), !, append([P], L, Z), step_short_path(X, Y, Z, M).
-step_short_path(X, Y, L, M) :- member(M, L), maplist([A,B]>>(length(A,B)), L, Z), my_sort(Z, S), length(M, Q), my_number(Q, 0, S).
+step_short_path(X, Y, L, M) :- member(M, L), maplist(length, L, Z), my_sort(Z, S), length(M, Q), my_number(Q, 0, S).
 
 % 18
+% (i, i, i)
+% (i, i, o) undeterm
 
 min_path(X, Y, M) :- step_min_path(X, Y, [], M).
 
@@ -156,7 +185,7 @@ path_weight([A, T], W) :- neighbours2(A, T, W).
 path_weight([A, B | C], W) :- append([B], C, Z), path_weight(Z, WW), neighbours2(A, B, WWW), W is WW + WWW.
 
 step_min_path(X, Y, L, M) :- path(X, Y, P), append([X], P, PP), n_member(PP, L), !, append([PP], L, Z), step_min_path(X, Y, Z, M).
-step_min_path(X, Y, L, M) :- member(M, L), maplist([A,B]>>(path_weight(A,B)), L, Z), my_sort(Z, S), path_weight(M, Q), my_number(Q, 0, S).
+step_min_path(X, Y, L, M) :- member(M, L), maplist(path_weight, L, Z), my_sort(Z, S), path_weight(M, Q), my_number(Q, 0, S).
 
 % 19
 
