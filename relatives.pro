@@ -42,10 +42,6 @@ maried(judy, ralph).
 maried(jane, keith).
 maried(nora, bruce).
 
-happy_maried(A, B) :-
-	maried(A, B);
-	maried(B, A).
-
 parent(mary,  irma).
 parent(james, irma).
 parent(mary,  ruth).
@@ -81,6 +77,37 @@ parent(keith, ralph).
 parent(nora,  ruby).
 parent(bruce, ruby).
 
+%-----------------------------
+% supplimentary predicates
+
+partners_parent(PARENT, HUMAN) :-
+	happy_maried(HUMAN, PARTNER),
+	parent(PARENT, PARTNER).
+
+happy_maried(A, B) :-
+	maried(A, B);
+	maried(B, A).
+
+has_same_parents(CHILD1, CHILD2) :-
+	father(FATHER, CHILD1),
+	mother(MOTHER, CHILD1),
+	father(FATHER, CHILD2),
+	mother(MOTHER, CHILD2),
+	not(CHILD1 = CHILD2).
+
+uncle_aunt_like(UNCLE_AUNT, CHILD) :-
+	parent(PARENT, CHILD),
+	has_same_parents(PARENT, UNCLE_AUNT).
+
+double(DVOYURODNIE, CHILD) :-
+	uncle_aunt_like(PARENT2, CHILD)
+	parent(PARENT2, DVOYURODNIE).
+
+grandparent(GRAND, CHILD) :-
+	parent(PARENT, CHILD),
+	parent(GRAND, PARENT).
+
+%------------------------------
 
 son(SON, PARENT) :-
 	male(SON),
@@ -98,13 +125,6 @@ father(FATHER, CHILD) :-
 	male(FATHER),
 	parent(FATHER, CHILD).
 
-has_same_parents(CHILD1, CHILD2) :-
-	father(FATHER, CHILD1),
-	mother(MOTHER, CHILD1),
-	father(FATHER, CHILD2),
-	mother(MOTHER, CHILD2),
-	not(CHILD1 = CHILD2).
-
 brother(BROTHER, CHILD) :-
 	male(BROTHER),
 	has_same_parents(BROTHER, CHILD),
@@ -115,10 +135,6 @@ sister(SISTER, CHILD) :-
 	has_same_parents(SISTER, CHILD),
 	not(SISTER = CHILD).
 
-uncle_aunt_like(UNCLE_AUNT, CHILD) :-
-	parent(PARENT, CHILD),
-	has_same_parents(PARENT, UNCLE_AUNT).
-
 uncle(UNCLE, CHILD) :-
 	male(UNCLE),
 	uncle_aunt_like(UNCLE, CHILD).
@@ -127,21 +143,13 @@ aunt(AUNT, CHILD) :-
 	female(AUNT),
 	uncle_aunt_like(AUNT, CHILD).
 
-double(DVOYURODNIE, CHILD) :-
-	uncle_aunt_like(PARENT2, CHILD)
-	parent(PARENT2, DVOYURODNIE).
+double_brother(DOUBLE_B, CHILD) :-
+	double(DOUBLE_B, CHILD),
+	male(DOUBLE_B).
 
-double_brother(NEPHEW, CHILD) :-
-	double(NEPHEW, CHILD),
-	male(NEPHEW).
-
-double_sister(COUSIN, CHILD) :-
-	double(COUSIN, CHILD),
-	male(COUSIN).
-
-grandparent(GRAND, CHILD) :-
-	parent(PARENT, CHILD),
-	parent(GRAND, PARENT).
+double_sister(DOUBLE_S, CHILD) :-
+	double(DOUBLE_S, CHILD),
+	male(DOUBLE_S).
 
 grandfather(GRAND, CHILD) :-
 	grandparent(GRAND, CHILD),
@@ -159,16 +167,31 @@ grandaughter(GRANDAUGHTER, GRANDPARENT) :-
 	grandparent(GRANDPARENT, GRANDAUGHTER),
 	female(GRANDAUGHTER).
 
-partners_parent(PARENT, HUMAN) :-
-	happy_maried(HUMAN, PARTNER),
-	parent(PARENT, PARTNER).
-
 tesha(TESHA, HUMAN) :-
 	partners_parent(TESHA, HUMAN),
+	male(HUMAN),
 	female(TESHA).
 
 test(TEST, HUMAN) :-
 	partners_parent(TEST, HUMAN),
+	male(HUMAN),
 	male(TEST).
 
+svekrov(SVEKROV, HUMAN) :-
+	partners_parent(SVEKROV, HUMAN),
+	female(HUMAN),
+	female(SVEKROV).
+
+svekr(SVEKR, HUMAN) :-
+	partners_parent(SVEKR, HUMAN),
+	female(HUMAN),
+	male(SVEKR).
+
+cousin(COUSIN, HUMAN) :-
+	uncle_aunt_like(HUMAN, COUSIN),
+	female(COUSIN).
+
+nephew(NEPHEW, HUMAN) :-
+	uncle_aunt_like(HUMAN, NEPHEW),
+	male(NEPHEW).
 
