@@ -58,8 +58,12 @@ n_member(E, [A | L]) :- not(E = A), n_member(E, L).
 % (i, i)
 % (o, i) undeterm
 % (i, o) undeterm
+
+my_head([], _).
+my_head([A | B], [A | C]) :- my_head(B, C).
+
 my_sublist([], _).
-my_sublist([A | B], [A | C]) :- my_sublist(B, C).
+my_sublist([A | B], [A | C]) :- my_head(B, C).
 my_sublist(A, [_ | C]) :- my_sublist(A, C).
 
 %8
@@ -72,23 +76,32 @@ my_number(E, X, [_ | B]) :- my_number(E, Y, B), X is Y+1.
 
 %9
 % (i, i)
-% (o, i) undeterm
 % (i, o)
-my_sort(A, B) :- permutation(A, B), my_sorted(B).
+my_sort(A, B) :- my_merge_sort(A, B).
 
-my_sorted([]).
-my_sorted([A | B]) :- not(greatet_then_some(A, B)), my_sorted(B).
+my_merge_sort([A, B], [A, B]) :- max(A, B, B), !.
+my_merge_sort([B, A], [A, B]) :- max(A, B, B), !.
+my_merge_sort([A], [A]) :- !.
+my_merge_sort(A, SORTED) :- half_list(A, SH, BH), my_merge_sort(SH, SSH), my_merge_sort(BH, BBH), my_merge(SSH, BBH, SORTED).
 
-greatet_then_some(A, B) :- member(M, B), A > M.
+my_merge([], A, A) :- !.
+my_merge(A, [], A) :- !.
+my_merge([A | B], [C | D], [A | SORTED] ) :- max(A, C, C), !, my_merge(B, [C | D], SORTED).
+my_merge([A | B], [C | D], [C | SORTED] ) :- max(A, C, A), !, my_merge([A | B], D, SORTED).
+
+half_list(A, SH, BH) :- length(A, LA), divmod(LA, 2, X, Y), LSH is Y + X,length(SH, LSH), my_head(SH, A), append(SH, BH, A).
 
 %--------------------------------------
+
+my_is_set([]).
+my_is_set([A | B]) :- n_member(A, B), my_is_set(B).
 
 %10
 % (i, i)
 % (o, i) undeterm
-my_subset([], A) :- is_set(A).
-my_subset(A, A) :- is_set(A).
-my_subset([A | B], C) :- member(A, C), n_member(A, B), is_set(B), my_subset(B, C).
+my_subset([], A) :- my_is_set(A).
+my_subset(A, A) :- my_is_set(A).
+my_subset([A | B], C) :- member(A, C), n_member(A, B), my_is_set(B), my_subset(B, C).
 
 %11
 %(i, i, i)
@@ -120,15 +133,18 @@ my_tree_eq(tree(L1, R1, N), tree(L2, R2, N)) :- my_tree_eq(L1, L2), my_tree_eq(R
 % (i, o) undeterm
 % (o, i) undeterm
 % my_subtree(tree(empty, tree(empty, empty, 0), 0), tree(empty, empty, 0)).
-my_subtree(A, A).
-my_subtree(tree(L, R, _), X) :- my_tree_eq(L, X) ; my_tree_eq(R, X) ; my_subtree(L, X) ; my_subtree(R, X).
+my_subtree(A, A) :- not(A == empty).
+my_subtree(tree(L, R, _), X) :- X == L, not(X == empty); X == R, not(X == empty); my_subtree(L, X) ; my_subtree(R, X).
 
 %14
 % (i, i)
 % (i, o)
 % my_flatten_tree(tree(empty, tree(tree(empty, empty, 2), empty, 0), 1), X).
-my_flatten_tree(empty, []).
-my_flatten_tree(tree(L, R, N), S) :- member(N, S), my_delete_first(N, S, X), my_flatten_tree(L, A), my_flatten_tree(R, B), !, my_append(A, B, X).
+my_flatten_tree(T, L) :- step_flat(T, [], L).
+
+step_flat(empty, L, L).
+step_flat(tree(empty, empty, V), L, [V | L]) :- !.
+step_flat(tree(L, R, V), LF, [V | RF]) :- step_flat(L, LF, LL), step_flat(R, LL, RF).
 
 %15
 % (i, i, i, i)
@@ -168,7 +184,8 @@ path(X, Y, L) :- step_path(X, Y, [], L), n_member(X, L).
 step_path(X, X, _, []).
 step_path(X, Y, R, [A | B]) :- neighbours(X, A), n_member(A, R), append([A], R, Z), step_path(A, Y, Z, B).
 
-all_paths(X, Y, LP) :- step_all_paths(X, Y, [], LP).
+%all_paths(X, Y, LP) :- step_all_paths(X, Y, [], LP).
+all_paths(X, Y, PATHS) :- findall(Z, path(X, Y, Z), PATHS).
 
 step_all_paths(X, Y, AP, LP) :- path(X, Y, P), n_member(P, AP), !, append([P], AP, Z), step_all_paths(X, Y, Z, LP).
 step_all_paths(_, _, LP, LP).
