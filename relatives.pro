@@ -99,8 +99,8 @@ uncle_aunt_like(UNCLE_AUNT, CHILD) :-
 	parent(PARENT, CHILD),
 	has_same_parents(PARENT, UNCLE_AUNT).
 
-double(DVOYURODNIE, CHILD) :-
-	uncle_aunt_like(PARENT2, CHILD)
+double_like(DVOYURODNIE, CHILD) :-
+	uncle_aunt_like(PARENT2, CHILD),
 	parent(PARENT2, DVOYURODNIE).
 
 grandparent(GRAND, CHILD) :-
@@ -108,6 +108,14 @@ grandparent(GRAND, CHILD) :-
 	parent(GRAND, PARENT).
 
 %------------------------------
+
+husband(HUSBAND, HUMAN) :-
+	happy_maried(HUSBAND, HUMAN),
+	male(HUSBAND).
+
+wife(WIFE, HUMAN) :-
+	happy_maried(WIFE, HUMAN),
+	female(WIFE).
 
 son(SON, PARENT) :-
 	male(SON),
@@ -144,11 +152,11 @@ aunt(AUNT, CHILD) :-
 	uncle_aunt_like(AUNT, CHILD).
 
 double_brother(DOUBLE_B, CHILD) :-
-	double(DOUBLE_B, CHILD),
+	double_like(DOUBLE_B, CHILD),
 	male(DOUBLE_B).
 
 double_sister(DOUBLE_S, CHILD) :-
-	double(DOUBLE_S, CHILD),
+	double_like(DOUBLE_S, CHILD),
 	male(DOUBLE_S).
 
 grandfather(GRAND, CHILD) :-
@@ -195,3 +203,59 @@ nephew(NEPHEW, HUMAN) :-
 	uncle_aunt_like(HUMAN, NEPHEW),
 	male(NEPHEW).
 
+shurin(SHURIN, HUMAN) :-
+	wife(WIFE, HUMAN),
+	brother(SHURIN, WIFE).
+
+svoyachenitsa(SVOYACHENITSA, HUMAN) :-
+	wife(WIFE, HUMAN),
+	sister(SVOYACHENITSA, WIFE).
+
+zolovka(ZOLOVKA, HUMAN) :-
+	husband(HUSBAND, HUMAN),
+	sister(ZOLOVKA, HUSBAND).
+
+dever(DEVER, HUMAN) :-
+	husband(HUSBAND, HUMAN),
+	brother(DEVER, HUSBAND).
+
+snoha(SNOHA, HUMAN) :-
+	svekrov(HUMAN, SNOHA);
+	svekr(HUMAN, SNOHA).
+
+zyat(ZYAT, HUMAN) :-
+	tesha(HUMAN, ZYAT),
+	test(HUMAN, ZYAT).
+
+relationship(HUMAN1, HUMAN2, husband)        :- husband(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, wife)           :- wife(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, son)            :- son(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, daughter)       :- daughter(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, mother)         :- mother(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, father)         :- father(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, brother)        :- brother(HUMAN1.
+relationship(HUMAN1, HUMAN2, sister)         :- sister(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, uncle)          :- uncle(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, aunt)           :- aunt(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, double_brother) :- double_brother(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, double_sister)  :- double_sister(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, grandfather)    :- grandfather(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, grandmother)    :- grandmother(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, grandson)       :- grandson(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, grandaughter)   :- grandaughter(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, tesha)          :- tesha(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, test)           :- test(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, svekrov)        :- svekrov(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, svekr)          :- svekr(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, snoha)          :- snoha(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, zyat)           :- zyat(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, cousin)         :- cousin(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, nephew)         :- nephew(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, shurin)         :- shurin(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, svoyachenitsa)  :- svoyachenitsa(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, zolovka)        :- zolovka(HUMAN1, HUMAN2).
+relationship(HUMAN1, HUMAN2, unknown).
+
+whois(HUMAN1, HUMAN2) :-
+	relationship(HUMAN1, HUMAN2, RELATION), not(RELATION == unknown), writef("%t is %t's %t\n", [HUMAN1, HUMAN2, RELATION]);
+	relationship(HUMAN1, HUMAN2, RELATION), RELATION == unknown, !, writef("unknown relationship\n").
