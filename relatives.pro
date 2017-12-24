@@ -233,7 +233,7 @@ relationship(HUMAN1, HUMAN2, son)            :- son(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, daughter)       :- daughter(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, mother)         :- mother(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, father)         :- father(HUMAN1, HUMAN2).
-relationship(HUMAN1, HUMAN2, brother)        :- brother(HUMAN1.
+relationship(HUMAN1, HUMAN2, brother)        :- brother(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, sister)         :- sister(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, uncle)          :- uncle(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, aunt)           :- aunt(HUMAN1, HUMAN2).
@@ -254,8 +254,16 @@ relationship(HUMAN1, HUMAN2, nephew)         :- nephew(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, shurin)         :- shurin(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, svoyachenitsa)  :- svoyachenitsa(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, zolovka)        :- zolovka(HUMAN1, HUMAN2).
-relationship(HUMAN1, HUMAN2, unknown).
 
-whois(HUMAN1, HUMAN2) :-
-	relationship(HUMAN1, HUMAN2, RELATION), not(RELATION == unknown), writef("%t is %t's %t\n", [HUMAN1, HUMAN2, RELATION]);
-	relationship(HUMAN1, HUMAN2, RELATION), RELATION == unknown, !, writef("unknown relationship\n").
+whois(HUMAN1, HUMAN2) :- complicated_path(HUMAN1, HUMAN2, PATH), print_path(PATH).
+%whois(HUMAN1, HUMAN2) :-
+%	relationship(HUMAN1, HUMAN2, RELATION), writef("%t is %t's %t\n", [HUMAN1, HUMAN2, RELATION]);
+%	not(relationship(HUMAN1, HUMAN2, RELATION)), !, writef("unknown relationship\n").
+
+complicated_path(HUMAN1, HUMAN2, [HUMAN1 | RESTPATH]) :- last(RESTPATH, HUMAN2), path([HUMAN1 | RESTPATH]).
+
+path([HUMAN1, RELATION12, HUMAN2]) :- relationship(HUMAN1, HUMAN2, RELATION12).
+path([HUMAN1, RELATION12, HUMAN2 | REST]) :- relationship(HUMAN1, HUMAN2, RELATION12), path([HUMAN2 | REST]).
+
+print_path([HUMAN1, RELATION12, HUMAN2]) :- writef("%t is %t of %t\n", [HUMAN1, RELATION12, HUMAN2]), !.
+print_path([HUMAN1, RELATION12, HUMAN2 | REST]) :- writef("%t is %t of %t, when ", [HUMAN1, RELATION12, HUMAN2]), print_path([HUMAN2 | REST]).
