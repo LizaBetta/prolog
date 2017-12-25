@@ -10,7 +10,6 @@ my_append([A | B], C, [A | D]) :- my_append(B, C, D).
 %2
 % (i, i)
 % (o, i)
-% (i, o)
 
 my_reverse([], []).
 my_reverse(A, B) :- step_reverse([], A, B).
@@ -24,7 +23,6 @@ step_reverse(A, B, [C | D]) :- append([C], A, X), step_reverse(X, B, D).
 % (i, o, i)
 % (i, i, o)
 
-my_delete_first(_, [], []).
 my_delete_first(E, [E | L1], L1).
 my_delete_first(E, [A | L1], [A | L2]) :- not(A=E), my_delete_first(E, L1, L2).
 
@@ -158,11 +156,21 @@ my_substitute(tree(L1, R1, A), A, B, tree(L2, R2, Y)) :- !, Y = B, my_substitute
 my_substitute(tree(L1, R1, X), A, B, tree(L2, R2, X)) :- my_substitute(L1, A, B, L2), my_substitute(R1, A, B, R2).
 
 %--------------------------------------
-edge(a, c, 8).
-edge(a, b, 3). %COMMENT THIS LINE TO MAKE NOT CYCLIC
-edge(c, d, 12).
-edge(b, d, 0).
-edge(e, d, 9).
+%edge(a, c, 8).
+%edge(a, b, 3). %COMMENT THIS LINE TO MAKE NOT CYCLIC
+%edge(c, d, 12).
+%edge(b, d, 0).
+%edge(e, d, 9).
+
+edge(a, b, 4).
+edge(b, c, 3).
+edge(a, c, 1).
+edge(c, d, 3).
+edge(c, e, 2).
+edge(e, d, 1).
+edge(e, b, 1).
+edge(f, b, 7).
+edge(f, d, 15).
 
 neighbours(A, B) :- edge(A, B, _).
 neighbours(A, B) :- edge(B, A, _).

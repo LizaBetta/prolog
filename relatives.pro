@@ -1,3 +1,7 @@
+:- dynamic male/1, female/1, parent/2, maried/2.
+:- discontiguous index/2, male/1, female/1.
+
+
 female(mary). index(mary, 1).
 male(james). index(james, 2).
 female(irma). index(irma, 3).
@@ -42,8 +46,6 @@ maried(judy, ralph).
 maried(jane, keith).
 maried(nora, bruce).
 
-parent(mary,  irma).
-parent(james, irma).
 parent(mary,  ruth).
 parent(james, ruth).
 parent(irma,  larry).
@@ -79,6 +81,8 @@ parent(bruce, ruby).
 
 %-----------------------------
 % supplimentary predicates
+
+exists(HUMAN) :- male(HUMAN); female(HUMAN).
 
 partners_parent(PARENT, HUMAN) :-
 	happy_maried(HUMAN, PARTNER),
@@ -255,6 +259,7 @@ relationship(HUMAN1, HUMAN2, shurin)         :- shurin(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, svoyachenitsa)  :- svoyachenitsa(HUMAN1, HUMAN2).
 relationship(HUMAN1, HUMAN2, zolovka)        :- zolovka(HUMAN1, HUMAN2).
 
+whoisindex(I1, I2) :- index(HUMAN1, I1), index(HUMAN2, I2), whois(HUMAN1, HUMAN2).
 whois(HUMAN1, HUMAN2) :- complicated_path(HUMAN1, HUMAN2, PATH), print_path(PATH).
 %whois(HUMAN1, HUMAN2) :-
 %	relationship(HUMAN1, HUMAN2, RELATION), writef("%t is %t's %t\n", [HUMAN1, HUMAN2, RELATION]);
@@ -267,3 +272,116 @@ path([HUMAN1, RELATION12, HUMAN2 | REST]) :- relationship(HUMAN1, HUMAN2, RELATI
 
 print_path([HUMAN1, RELATION12, HUMAN2]) :- writef("%t is %t of %t\n", [HUMAN1, RELATION12, HUMAN2]), !.
 print_path([HUMAN1, RELATION12, HUMAN2 | REST]) :- writef("%t is %t of %t, when ", [HUMAN1, RELATION12, HUMAN2]), print_path([HUMAN2 | REST]).
+
+%---------------------------------
+
+consistant() :- not(inconsistant()), not(bad_mariage()).
+
+inconsistant() :- relationship(HUMAN1, HUMAN2, REL1), relationship(HUMAN1, HUMAN2, REL2), not(REL1 == REL2), !, writef("bad assertion because %t and %t are not %t and %t\n", [HUMAN1, HUMAN2, REL1, REL2]).
+
+incorrect_mariage(HUMAN1, HUMAN2) :-
+	not(female(HUMAN1));
+	not(male(HUMAN2)).
+
+bad_mariage() :- maried(HUMAN1, HUMAN2), incorrect_mariage(HUMAN1, HUMAN2), writef("bad mariage because of gender with %t and %t\n", [HUMAN1, HUMAN2]).
+
+maybe_retract_male(NEW_MALE) :-
+	consistant(), !, true;
+	retract(male(NEW_MALE)), !, fail.
+
+maybe_retract_female(NEW_FEMALE) :-
+	consistant(), !, true;
+	retract(female(NEW_FEMALE)), !, fail.
+
+maybe_retract_parent(NEW_PARENT, NEW_CHILD) :-
+	consistant(), !, true;
+	retract(parent(NEW_PARENT, NEW_CHILD)), !, fail.
+
+maybe_retract_mariage(FEMALE, MALE) :-
+	consistant(), !, true;
+	retract(maried(FEMALE, MALE)), !, fail.
+
+add_male(X, ok) :- female(X), retract(female(X)), asserta(male(X)), maybe_retract_male(X), !.
+add_male(X, ok) :- asserta(male(X)), maybe_retract_male(male(X)), !.
+add_male(_, not_ok) :- !, fail.
+
+add_female(X, ok) :- male(X), retract(fefemale(X)), asserta(female(X)), maybe_retract_female(X), !.
+add_female(X, ok) :- asserta(female(X)), maybe_retract_female(female(X)), !.
+add_female(_, not_ok) :- !, fail.
+
+add_parent(P, C, ok) :- retract(parent(P, C)), asserta(parent(P, C)), maybe_retract_parent(P, C), !.
+add_parent(P, C, ok) :- asserta(parent(P, C)), maybe_retract_parent(P, C), !.
+add_parent(_, _, not_ok) :- !, fail.
+
+add_mariage(FEMALE, MALE, STATUS) :- retract(maried(FEMALE, MALE)), asserta(maried(FEMALE, MALE)), maybe_retract_mariage(FEMALE, MALE), !.
+add_mariage(FEMALE, MALE, STATUS) :- asserta(maried(FEMALE, MALE)), maybe_retract_mariage(FEMALE, MALE), !.
+add_mariage(_, _, not_ok) :- !, fail.
+
+main :-
+	repeat,
+		write("\nMenu: "),
+		write("\n1. Relationship between 2 people: "),
+		write("\n2. Add new human: "),
+		write("\n3. Add new relation: "),
+		write("\n0. Exit"),
+		write("\nSelect one to process: "),
+		read(X),
+		menu(X),
+		write("\n").
+
+menu(0).
+
+menu(1) :-
+	write("\n in menu1"),
+	repeat,
+		write("\nGive me name: "),
+		read(HUMAN1),
+		(exists(HUMAN1), !; writef("\n Unexistent human %s", [HUMAN1]), fail),
+	repeat,
+		write("\nGive me name: "),
+		read(HUMAN2),
+		(exists(HUMAN2), !; writef("\n Unexistent human %s", [HUMAN2]), fail),
+	(
+		complicated_path(HUMAN1, HUMAN2, PATH), print_path(PATH), !
+	),
+	fail.
+
+menu(2) :-
+	repeat,
+		write("\nGive me name: "),
+		read(Name),
+	repeat,
+		write("\n1. Press 1, if you want a male"),
+		write("\n2. Press 2, if you want a female"),
+		write("\n0. Press 0, if you want to exit"),
+		read(Num),
+		(
+			(Num == 1, add_male(Name, ok), !);
+			(Num == 2, add_female(Name, ok), !);
+			(Num == 0, !);
+			write("\n Incorrect input"), fail
+		), fail.
+
+menu(3) :-
+	repeat,
+		write("\nGive me a name: "),
+		read(HUMAN1),
+		(exists(HUMAN1), !; writef("\n Unexistent human %s", [HUMAN1]), fail),
+	repeat,
+		write("\nGive me a name: "),
+		read(HUMAN2),
+		(exists(HUMAN2), !; writef("\n Unexistent human %s", [HUMAN2]), fail),
+	repeat,
+		write("\n1. Press 1, if you want the first one to become a wife of the second one"),
+		write("\n2. Press 2, if you want the first one to become a husband of the second one"),
+		write("\n3. Press 3, if you want the first one to become a parent of the second one"),
+		write("\n0. Press 0, if you want to exit"),
+		read(Num),
+		(
+			(Num == 1, add_mariage(HUMAN1, HUMAN2, ok),!);
+			(Num == 2, add_mariage(HUMAN2, HUMAN1, ok),!);
+			(Num == 3, add_parent(HUMAN1, HUMAN2, ok),!);
+			(Num == 0, !);
+			write("\n Incorrect input"), fail
+		), fail.
+
